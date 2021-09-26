@@ -1,125 +1,47 @@
-import Libp2p from "libp2p";
-import TCP from "libp2p-tcp";
-// @ts-ignore no types
-import Mplex from "libp2p-mplex";
-import { NOISE } from "@chainsafe/libp2p-noise";
-// @ts-ignore no types
-import MulticastDNS from "libp2p-mdns";
-import Gossipsub from "libp2p-gossipsub";
-import PeerId from "peer-id";
-import BufferList from "bl/BufferList";
+import { app, BrowserWindow } from "electron";
+import * as path from "path";
+import { runP2P } from "./p2p";
 
-async function createNode() {
-  const node = await Libp2p.create({
-    addresses: {
-      listen: ["/ip4/0.0.0.0/tcp/0"],
+function createWindow() {
+  // Create the browser window.
+  const mainWindow = new BrowserWindow({
+    height: 600,
+    webPreferences: {
+      preload: path.join(__dirname, "preload.js"),
     },
-    modules: {
-      transport: [TCP],
-      streamMuxer: [Mplex],
-      connEncryption: [NOISE],
-      peerDiscovery: [MulticastDNS],
-      pubsub: Gossipsub,
-    },
-    config: {
-      peerDiscovery: {
-        [MulticastDNS.tag]: {
-          interval: 1000,
-          enabled: true,
-        },
-      },
-    },
+    width: 800,
   });
 
-  return node;
+  // and load the index.html of the app.
+  mainWindow.loadFile(path.join(__dirname, "../index.html"));
+
+  // Open the DevTools.
+  mainWindow.webContents.openDevTools();
 }
 
-// TODO: msgIdFn (see https://github.com/ChainSafe/js-libp2p-gossipsub)
-// - get from Compoventuals (sender + uniqueNumber).
+// This method will be called when Electron has finished
+// initialization and is ready to create browser windows.
+// Some APIs can only be used after this event occurs.
+app.on("ready", () => {
+  createWindow();
 
-const TOPIC = "test";
-const HISTORY_PROTOCOL = "compoventuals/history/0.1.0";
+  app.on("activate", function () {
+    // On macOS it's common to re-create a window in the app when the
+    // dock icon is clicked and there are no other windows open.
+    if (BrowserWindow.getAllWindows().length === 0) createWindow();
+  });
+});
 
-class Broadcaster {
-  onreceive!: (message: Uint8Array) => void;
-
-  private readonly history: Uint8Array[] = [];
-
-  constructor(readonly node: Libp2p) {}
-
-  async start() {
-    // History send.
-    this.node.handle(HISTORY_PROTOCOL, async ({ stream }) => {
-      // Send the full history to the stream.
-      // console.log("Sending history");
-      // @ts-ignore wrong type for sink
-      await stream.sink(this.history.values());
-    });
-
-    // History receive.
-    let first = true;
-    this.node.on("peer:discovery", (peerId: PeerId) => {
-      console.log("Discovered:", peerId.toB58String());
-      if (first) {
-        first = false;
-        // TODO: more tries if they don't respond quickly.
-        this.requestHistory(peerId);
-      }
-    });
-
-    await this.node.start();
-
-    // Pubsub receive.
-    this.node.pubsub.on(TOPIC, (msg) => this.receiveInternal(msg.data));
-    this.node.pubsub.subscribe(TOPIC);
+// Quit when all windows are closed, except on macOS. There, it's common
+// for applications and their menu bar to stay active until the user quits
+// explicitly with Cmd + Q.
+app.on("window-all-closed", () => {
+  if (process.platform !== "darwin") {
+    app.quit();
   }
+});
 
-  async stop() {
-    await this.node.stop();
-  }
+// In this file you can include the rest of your app"s specific main process
+// code. You can also put them in separate files and require them here.
 
-  send(message: Uint8Array) {
-    this.history.push(message);
-    this.node.pubsub.publish(TOPIC, message);
-  }
-
-  private receiveInternal(message: Uint8Array) {
-    this.history.push(message);
-    this.onreceive(message);
-  }
-
-  /**
-   * Request old messages from other peers, which pubsub won't
-   * give us.
-   *
-   * TODO: also request missing messages later?
-   */
-  private async requestHistory(peerId: PeerId) {
-    const { stream } = await this.node.dialProtocol(peerId, HISTORY_PROTOCOL);
-    for await (const chunk of stream.source) {
-      this.receiveInternal((chunk as BufferList).slice());
-    }
-  }
-}
-
-(async function () {
-  const node = await createNode();
-
-  const bcast = new Broadcaster(node);
-  bcast.onreceive = (message: Uint8Array) => {
-    console.log("Received: " + Buffer.from(message).toString());
-  };
-
-  await bcast.start();
-
-  console.log("Ready.");
-
-  let i = 0;
-  setInterval(() => {
-    const msgStr =
-      "Message " + i + " (" + node.peerId.toB58String().substring(2, 8) + ")";
-    bcast.send(new Uint8Array(Buffer.from(msgStr)));
-    console.log("Sent: " + msgStr);
-    i++;
-  }, 1000);
-})();
+runP2P();
