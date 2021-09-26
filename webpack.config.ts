@@ -42,6 +42,11 @@ const config: webpack.Configuration = {
           from: "./src/site/index.html",
           to: "./[base]",
         },
+        // Copy container.
+        {
+          from: "./src/site/container/*",
+          to: "./container/[base]",
+        },
       ],
     }),
   ],
