@@ -5,6 +5,7 @@ import Mplex from "libp2p-mplex";
 import { NOISE } from "@chainsafe/libp2p-noise";
 // @ts-ignore no types
 import MulticastDNS from "libp2p-mdns";
+import Gossipsub from "libp2p-gossipsub";
 
 async function createNode() {
   const node = await Libp2p.create({
@@ -16,6 +17,7 @@ async function createNode() {
       streamMuxer: [Mplex],
       connEncryption: [NOISE],
       peerDiscovery: [MulticastDNS],
+      pubsub: Gossipsub,
     },
     config: {
       peerDiscovery: {
@@ -30,27 +32,31 @@ async function createNode() {
   return node;
 }
 
-// class Broadcaster {
-//
-// }
+// TODO: msgIdFn (see https://github.com/ChainSafe/js-libp2p-gossipsub)
+// - get from Compoventuals (sender + uniqueNumber).
 
-function runApp() {
-  console.log("Ready.");
-
-  const messages = [];
-}
+const TOPIC = "test";
 
 (async function () {
   const node = await createNode();
 
-  // Run the app in two terminals on the same machine
-  // (hopefully same LAN as well, but not tested)
-  // and they should print each other's random peerIds.
-  node.on("peer:discovery", (peerId) =>
-    console.log("Discovered:", peerId.toB58String())
-  );
+  node.on("peer:discovery", (peerId) => {
+    console.log("Discovered:", peerId.toB58String());
+  });
 
   await node.start();
 
-  runApp();
+  node.pubsub.on(TOPIC, (msg) => {
+    console.log("received: " + Buffer.from(msg.data).toString());
+  });
+  node.pubsub.subscribe(TOPIC);
+
+  console.log("Ready.");
+
+  let i = 0;
+  setInterval(() => {
+    node.pubsub.publish(TOPIC, new Uint8Array(Buffer.from("Message" + i)));
+    console.log("Sent: Message" + i);
+    i++;
+  }, 1000);
 })();
