@@ -9,6 +9,10 @@ function createWindow() {
   mainWindow = new BrowserWindow({
     height: 600,
     width: 800,
+    webPreferences: {
+      nodeIntegration: true,
+      contextIsolation: false,
+    },
   });
 
   // and load the index.html of the app.
@@ -32,7 +36,9 @@ app.on("ready", async () => {
 
   // Establish a MessageChannel with the window.
   const { port1, port2 } = new MessageChannelMain();
-  mainWindow.webContents.postMessage("port", null, [port1]);
+  mainWindow.webContents.once("dom-ready", () => {
+    mainWindow.webContents.postMessage("port", null, [port1]);
+  });
 
   // Connect the MessageChannel's "data" messages to the P2P network.
   const bcast = await getP2P();
@@ -44,10 +50,15 @@ app.on("ready", async () => {
       case "message":
         bcast.send(e.data.message);
         break;
+      case "test":
+        console.log("got test");
+        break;
     }
   });
   await bcast.start();
   port2.start();
+
+  port2.postMessage({ type: "test" });
 });
 
 // Quit when all windows are closed, except on macOS. There, it's common

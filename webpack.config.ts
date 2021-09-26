@@ -11,6 +11,7 @@ const config: webpack.Configuration = {
     sideEffects: true,
   },
   entry: "./src/site/renderer.ts",
+  target: "electron-renderer",
   output: {
     filename: "renderer.js",
     path: path.resolve(__dirname, "dist/site"),
