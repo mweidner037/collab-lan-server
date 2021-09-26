@@ -1,12 +1,12 @@
-"use strict";
+import Libp2p from "libp2p";
+import TCP from "libp2p-tcp";
+// @ts-ignore no types
+import Mplex from "libp2p-mplex";
+import { NOISE } from "@chainsafe/libp2p-noise";
+// @ts-ignore no types
+import MulticastDNS from "libp2p-mdns";
 
-const Libp2p = require("libp2p");
-const TCP = require("libp2p-tcp");
-const Mplex = require("libp2p-mplex");
-const { NOISE } = require("@chainsafe/libp2p-noise");
-const MulticastDNS = require("libp2p-mdns");
-
-const createNode = async () => {
+async function createNode() {
   const node = await Libp2p.create({
     addresses: {
       listen: ["/ip4/0.0.0.0/tcp/0"],
@@ -28,7 +28,17 @@ const createNode = async () => {
   });
 
   return node;
-};
+}
+
+// class Broadcaster {
+//
+// }
+
+function runApp() {
+  console.log("Ready.");
+
+  const messages = [];
+}
 
 (async function () {
   const node = await createNode();
@@ -41,4 +51,6 @@ const createNode = async () => {
   );
 
   await node.start();
+
+  runApp();
 })();

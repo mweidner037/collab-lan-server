@@ -4,9 +4,11 @@
     "libp2p": "^0.33.0",
     "libp2p-mdns": "^0.17.0",
     "libp2p-mplex": "^0.10.4",
-    "libp2p-tcp": "^0.17.2"
+    "libp2p-tcp": "^0.17.2",
+    "ts-node": "^10.2.1",
+    "typescript": "^4.4.3"
   },
   "scripts": {
-    "start": "node src/main.js"
+    "start": "ts-node src/main.ts"
   }
 }
