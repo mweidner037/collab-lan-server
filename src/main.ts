@@ -1,14 +1,13 @@
-import { app, BrowserWindow } from "electron";
+import { app, BrowserWindow, MessageChannelMain } from "electron";
 import * as path from "path";
-import { runP2P } from "./p2p";
+import { getP2P } from "./p2p";
+
+let mainWindow!: BrowserWindow;
 
 function createWindow() {
   // Create the browser window.
-  const mainWindow = new BrowserWindow({
+  mainWindow = new BrowserWindow({
     height: 600,
-    webPreferences: {
-      preload: path.join(__dirname, "preload.js"),
-    },
     width: 800,
   });
 
@@ -16,13 +15,13 @@ function createWindow() {
   mainWindow.loadFile(path.join(__dirname, "../index.html"));
 
   // Open the DevTools.
-  mainWindow.webContents.openDevTools();
+  // mainWindow.webContents.openDevTools();
 }
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.on("ready", () => {
+app.on("ready", async () => {
   createWindow();
 
   app.on("activate", function () {
@@ -30,6 +29,25 @@ app.on("ready", () => {
     // dock icon is clicked and there are no other windows open.
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
   });
+
+  // Establish a MessageChannel with the window.
+  const { port1, port2 } = new MessageChannelMain();
+  mainWindow.webContents.postMessage("port", null, [port1]);
+
+  // Connect the MessageChannel's "data" messages to the P2P network.
+  const bcast = await getP2P();
+  bcast.onreceive = (message) => {
+    port2.postMessage({ type: "message", message });
+  };
+  port2.on("message", (e) => {
+    switch (e.data.type) {
+      case "message":
+        bcast.send(e.data.message);
+        break;
+    }
+  });
+  await bcast.start();
+  port2.start();
 });
 
 // Quit when all windows are closed, except on macOS. There, it's common
@@ -43,5 +61,3 @@ app.on("window-all-closed", () => {
 
 // In this file you can include the rest of your app"s specific main process
 // code. You can also put them in separate files and require them here.
-
-runP2P();

@@ -51,7 +51,6 @@ class Broadcaster {
     // History send.
     this.node.handle(HISTORY_PROTOCOL, async ({ stream }) => {
       // Send the full history to the stream.
-      // console.log("Sending history");
       // @ts-ignore wrong type for sink
       await stream.sink(this.history.values());
     });
@@ -102,24 +101,10 @@ class Broadcaster {
   }
 }
 
-export async function runP2P() {
+export async function getP2P(): Promise<Broadcaster> {
   const node = await createNode();
 
   const bcast = new Broadcaster(node);
-  bcast.onreceive = (message: Uint8Array) => {
-    console.log("Received: " + Buffer.from(message).toString());
-  };
 
-  await bcast.start();
-
-  console.log("Ready.");
-
-  let i = 0;
-  setInterval(() => {
-    const msgStr =
-      "Message " + i + " (" + node.peerId.toB58String().substring(2, 8) + ")";
-    bcast.send(new Uint8Array(Buffer.from(msgStr)));
-    console.log("Sent: " + msgStr);
-    i++;
-  }, 1000);
+  return bcast;
 }
