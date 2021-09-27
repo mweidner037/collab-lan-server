@@ -2,7 +2,7 @@ import { ContainerHost } from "compoventuals-container";
 import { Pre, Runtime } from "compoventuals";
 import { LocalWebSocketNetwork } from "./network";
 
-const CONTAINER_URL = "./container/plaintext.html";
+const CONTAINER_URL = "./container/container.html";
 
 (async function () {
   const wsAddr = location.origin.replace(/^http/, "ws");
