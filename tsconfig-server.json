@@ -3,6 +3,7 @@
     "rootDir": "src/server",
     "outDir": "dist/server",
     "module": "commonjs",
+    "target": "ES6",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,

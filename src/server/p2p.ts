@@ -43,7 +43,7 @@ const HISTORY_PROTOCOL = "compoventuals/history/0.1.0";
 class Broadcaster {
   onreceive!: (message: Uint8Array) => void;
 
-  private readonly history: Uint8Array[] = [];
+  readonly history: Uint8Array[] = [];
 
   constructor(readonly node: Libp2p) {}
 

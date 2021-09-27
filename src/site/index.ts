@@ -1,19 +1,12 @@
-import { ipcRenderer } from "electron";
 import { ContainerHost } from "compoventuals-container";
 import { Pre, Runtime } from "compoventuals";
-import { MessagePortNetwork } from "./message_port_network";
+import { LocalWebSocketNetwork } from "./network";
 
 const CONTAINER_URL = "./container/plaintext.html";
 
 (async function () {
-  const portPromise = new Promise<MessagePort>((resolve) => {
-    ipcRenderer.on("port", (e) => {
-      resolve(e.ports[0]);
-    });
-  });
-  const port = await portPromise;
-
-  const network = new MessagePortNetwork(port);
+  const wsAddr = location.origin.replace(/^http/, "ws");
+  const network = new LocalWebSocketNetwork(wsAddr);
   const runtime = new Runtime(network);
 
   // Add the container in an IFrame.
@@ -34,8 +27,6 @@ const CONTAINER_URL = "./container/plaintext.html";
 
   // Attach the container.
   const host = runtime.registerCrdt("host", Pre(ContainerHost)(iframe));
-
-  port.start();
 
   // TODO: loading.  Make sure to block GUI until host says it's complete.
 })();
