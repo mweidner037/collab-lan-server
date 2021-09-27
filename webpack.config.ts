@@ -10,10 +10,9 @@ const config: webpack.Configuration = {
     innerGraph: true,
     sideEffects: true,
   },
-  entry: "./src/site/renderer.ts",
-  target: "electron-renderer",
+  entry: "./src/site/index.ts",
   output: {
-    filename: "renderer.js",
+    filename: "index.js",
     path: path.resolve(__dirname, "dist/site"),
     clean: true,
   },
