@@ -35,10 +35,10 @@ async function createNode() {
 }
 
 // TODO: msgIdFn (see https://github.com/ChainSafe/js-libp2p-gossipsub)
-// - get from Compoventuals (sender + uniqueNumber).
+// - get from Collabs (sender + uniqueNumber).
 
 const TOPIC = "test";
-const HISTORY_PROTOCOL = "compoventuals/history/0.1.0";
+const HISTORY_PROTOCOL = "collabs/history/0.1.0";
 
 class Broadcaster {
   onreceive!: (message: Uint8Array) => void;

@@ -1,5 +1,5 @@
-import { ContainerHost } from "compoventuals-container";
-import { Pre, Runtime } from "compoventuals";
+import { ContainerHost } from "@collabs/container";
+import { Pre, Runtime } from "@collabs/collabs";
 import { LocalWebSocketNetwork } from "./network";
 
 const CONTAINER_URL = "./container/container.html";

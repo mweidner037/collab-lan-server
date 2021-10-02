@@ -1,4 +1,4 @@
-import { BroadcastNetwork } from "compoventuals";
+import { BroadcastNetwork } from "@collabs/collabs";
 
 /**
  * Unlike ws-client, has no "groups", and assumes the server
