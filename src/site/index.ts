@@ -1,5 +1,5 @@
 import { ContainerHost } from "@collabs/container";
-import { Pre, Runtime } from "@collabs/collabs";
+import { CRDTApp, Pre } from "@collabs/collabs";
 import { LocalWebSocketNetwork } from "./network";
 
 const CONTAINER_URL = "./container/container.html";
@@ -7,7 +7,7 @@ const CONTAINER_URL = "./container/container.html";
 (async function () {
   const wsAddr = location.origin.replace(/^http/, "ws");
   const network = new LocalWebSocketNetwork(wsAddr);
-  const runtime = new Runtime(network);
+  const app = new CRDTApp(network);
 
   // Add the container in an IFrame.
   const iframe = document.createElement("iframe");
@@ -26,7 +26,7 @@ const CONTAINER_URL = "./container/container.html";
   });
 
   // Attach the container.
-  const host = runtime.registerCrdt("host", Pre(ContainerHost)(iframe));
+  const host = app.registerCollab("host", Pre(ContainerHost)(iframe));
 
   // TODO: loading.  Make sure to block GUI until host says it's complete.
 })();

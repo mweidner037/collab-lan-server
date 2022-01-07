@@ -12,8 +12,8 @@
     "ws": "^8.2.2"
   },
   "devDependencies": {
-    "@collabs/collabs": "^0.1.1",
-    "@collabs/container": "^0.1.1",
+    "@collabs/collabs": "0.2.x",
+    "@collabs/container": "0.2.x",
     "@types/bl": "^5.0.1",
     "@types/copy-webpack-plugin": "^8.0.1",
     "@types/express": "^4.17.13",

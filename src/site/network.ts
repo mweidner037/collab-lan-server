@@ -26,7 +26,7 @@ export class LocalWebSocketNetwork implements BroadcastNetwork {
     throw new Error("Method not implemented.");
   }
 
-  load(saveData: Uint8Array): void {
+  load(saveData: Uint8Array | null): void {
     throw new Error("Method not implemented.");
   }
 }
